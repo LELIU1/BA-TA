@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>字节跳动 BA 业务架构画像 | 2026-06-01</title>
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-secondary: #555;
+    --border: #e2e8f0;
+    --accent: #3b82f6;
+    --accent-light: #eff6ff;
+    --red: #ef4444;
+    --red-bg: #fef2f2;
+    --amber: #f59e0b;
+    --amber-bg: #fffbeb;
+    --green: #22c55e;
+    --green-bg: #f0fdf4;
+    --purple: #8b5cf6;
+    --purple-bg: #faf5ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* Header */
+  .report-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 40px 48px;
+    margin-bottom: 32px;
+  }
+  .report-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .report-header .subtitle { font-size: 14px; color: #94a3b8; }
+  .report-header .meta { display: flex; gap: 32px; margin-top: 16px; font-size: 13px; color: #cbd5e1; }
+  .report-header .meta span { display: flex; align-items: center; gap: 6px; }
+  .badge-update {
+    display: inline-block; background: rgba(59,130,246,0.25); color: #93c5fd;
+    font-size: 12px; padding: 3px 10px; border-radius: 12px; margin-top: 12px;
+  }
+
+  /* Sections */
+  .section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 32px 36px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .section h2 {
+    font-size: 20px; font-weight: 700; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 2px solid var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section h2 .num {
+    background: var(--accent); color: #fff; width: 28px; height: 28px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .section h3 {
+    font-size: 16px; font-weight: 600; margin: 20px 0 12px;
+    color: var(--accent);
+  }
+
+  /* Tables */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0 20px;
+  }
+  th {
+    background: #f8fafc; text-align: left; padding: 10px 14px;
+    font-weight: 600; color: #475569; border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbfc; }
+
+  /* Severity */
+  .sev-critical { color: var(--red); font-weight: 700; }
+  .sev-high { color: var(--amber); font-weight: 600; }
+  .sev-mid { color: var(--green); }
+
+  /* Tags */
+  .tag {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; margin-right: 4px;
+  }
+  .tag-p0 { background: var(--red-bg); color: var(--red); }
+  .tag-p1 { background: var(--amber-bg); color: var(--amber); }
+  .tag-p2 { background: #f0f4ff; color: #6366f1; }
+  .tag-new {
+    background: #faf5ff; color: var(--purple);
+    font-size: 10px; padding: 1px 6px; border-radius: 8px; margin-left: 4px;
+  }
+  .tag-hot { background: #fff1f2; color: #e11d48; }
+
+  /* Trend arrows */
+  .trend-up { color: #16a34a; font-weight: 700; }
+  .trend-down { color: var(--red); font-weight: 700; }
+
+  /* Code / Flow */
+  .flow-chart {
+    background: #f8fafc; border-radius: 10px; padding: 24px 28px;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+    font-size: 13px; line-height: 1.8; white-space: pre;
+    overflow-x: auto; margin: 12px 0;
+    border: 1px solid var(--border);
+  }
+  .org-chart {
+    background: #f8fafc; border-radius: 10px; padding: 20px 24px;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+    font-size: 12px; line-height: 1.75; white-space: pre;
+    overflow-x: auto; border: 1px solid var(--border);
+  }
+
+  /* Callout boxes */
+  .callout {
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+    font-size: 14px; line-height: 1.7;
+  }
+  .callout-insight {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-left: 4px solid var(--accent);
+  }
+  .callout-insight p { margin-bottom: 8px; }
+  .callout-insight p:last-child { margin-bottom: 0; }
+
+  /* Star ratings */
+  .stars { color: #f59e0b; letter-spacing: 2px; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin: 16px 0;
+  }
+  .stat-card {
+    background: var(--accent-light); border-radius: 10px;
+    padding: 16px 20px; text-align: center;
+  }
+  .stat-card .value {
+    font-size: 26px; font-weight: 800; color: var(--accent);
+  }
+  .stat-card .label { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+  /* Footer */
+  .report-footer {
+    text-align: center; color: #94a3b8; font-size: 12px;
+    padding: 24px 0 8px;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 0 8px; }
+    .section { padding: 20px 16px; }
+    .report-header { padding: 24px 20px; }
+    .report-header h1 { font-size: 22px; }
+    table { font-size: 12px; }
+    th, td { padding: 8px 6px; }
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .section { box-shadow: none; break-inside: avoid; }
+    .report-header { border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ======== HEADER ======== -->
+<header class="report-header">
+  <h1>🧠 字节跳动 BA 业务架构画像</h1>
+  <div class="subtitle">基于华为"看BA讲TA"方法论 · 察阶段 | 客户业务架构深度洞察</div>
+  <div class="meta">
+    <span>📅 生成：2026-06-01</span>
+    <span>🔖 版本：v2.0（在 05-27 v1.0 基础上全面刷新）</span>
+    <span>📊 数据截止：2026-06-01</span>
+    <span>📰 来源：Bloomberg / Reuters / 财联社 / 南华早报 等公开信息</span>
+  </div>
+  <div class="badge-update">🔄 本期核心更新：自研CPU双路线 | 高通AI ASIC数百万颗 | 彭博Capex上限$700亿 | 豆包三档付费 | Agent商业模式质变</div>
+</header>
+
+<!-- ======== 一、客户基本画像 ======== -->
+<div class="section">
+  <h2><span class="num">一</span>客户基本画像</h2>
+  <table>
+    <thead><tr><th style="width:130px">维度</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>客户名称</td>
+        <td><strong>字节跳动（ByteDance）</strong></td>
+      </tr>
+      <tr>
+        <td>所属行业</td>
+        <td>互联网/科技 — 社交媒体、内容平台、云计算、AI</td>
+      </tr>
+      <tr>
+        <td>业务规模</td>
+        <td>2025营收 ~1983亿美元（Sacra）/ ~1860亿（Bloomberg）；净利润~500亿美元，<span class="sev-high">同比下滑>70%</span></td>
+      </tr>
+      <tr>
+        <td>核心业务</td>
+        <td>抖音（国内内容+电商）、TikTok（全球化）、火山引擎（云+AI）、飞书（企业协作）</td>
+      </tr>
+      <tr>
+        <td>发展阶段</td>
+        <td><strong>成熟期 + AI转型深水区</strong> — 传统业务增速放缓（国内~20%），AI成第二增长曲线；C端AI商业化进入<strong>付费订阅实质阶段</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="value">3.45亿</div>
+      <div class="label">豆包 MAU (Q1)</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">120万亿</div>
+      <div class="label">日均Token消耗</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">$700亿</div>
+      <div class="label">Capex内部上限(彭博)</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">49.5%</div>
+      <div class="label">MaaS调用量份额(IDC)</div>
+    </div>
+    <div class="stat-card">
+      <div class="value">600万</div>
+      <div class="label">Trae月活开发者</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== 二、商业模式 ======== -->
+<div class="section">
+  <h2><span class="num">二</span>商业模式</h2>
+
+  <h3>💰 收入结构</h3>
+  <table>
+    <thead><tr><th>来源</th><th>占比</th><th>最新动态</th></tr></thead>
+    <tbody>
+      <tr><td><strong>广告</strong></td><td>~55-60%</td><td>抖音/TikTok信息流，点击率高于行业均值30%</td></tr>
+      <tr><td><strong>电商</strong></td><td>~15-20%</td><td>抖音电商（GMV增速放缓至25%）、TikTok Shop（Q1泰国52亿美元）、红果短剧电商化启动</td></tr>
+      <tr><td><strong>云+AI</strong></td><td>~5-10%</td><td>MaaS 49.5%第一；<span class="tag tag-p0">Agent Plan</span>开创订阅制；豆包三档付费 68/200/500元/月</td></tr>
+      <tr><td><strong>游戏/教育/其他</strong></td><td>~5-10%</td><td>朝夕光年、大力教育（收缩中）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>🗺️ 地域结构</h3>
+  <table>
+    <thead><tr><th>区域</th><th>营收占比</th><th>增速</th></tr></thead>
+    <tbody>
+      <tr><td>国内</td><td>~70%</td><td>~20% YoY</td></tr>
+      <tr><td>海外</td><td>~30%（从25%快速增长）</td><td>~50% YoY</td></tr>
+    </tbody>
+  </table>
+
+  <h3>🎯 核心价值主张</h3>
+  <div class="stats-row">
+    <div class="stat-card" style="background:#fef2f2;">
+      <div class="label" style="color:#475569;"><strong>C端</strong></div>
+      <div style="font-size:14px;color:#334155;margin-top:6px;">"用AI重新定义信息获取、内容创作和消费体验"<br>豆包MAU 3.45亿是超级入口</div>
+    </div>
+    <div class="stat-card" style="background:#faf5ff;">
+      <div class="label" style="color:#475569;"><strong>B端（火山引擎）</strong></div>
+      <div style="font-size:14px;color:#334155;margin-top:6px;">"企业AI化的核心底座"<br>从"卖Token"升级为"卖Agent能力平台"</div>
+    </div>
+  </div>
+
+  <h3>💸 成本结构</h3>
+  <table>
+    <thead><tr><th>成本项</th><th>规模</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>AI Capex 2026</td>
+        <td><strong>>2000亿元 → 上限$700亿(~4777亿)</strong></td>
+        <td>两周内Capex预期三度上修，上调原因：AI扩张+内存涨价+CPU项目</td>
+      </tr>
+      <tr>
+        <td>AI推理成本</td>
+        <td><span class="sev-critical">最大单一运营成本</span></td>
+        <td>豆包日均Token消耗超120万亿</td>
+      </tr>
+      <tr>
+        <td>净利润</td>
+        <td>~$500亿但<span class="sev-high">同比下滑>70%</span></td>
+        <td>AI投入是核心原因</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>🤝 关键合作伙伴</h3>
+  <table>
+    <thead><tr><th>领域</th><th>合作方</th><th>定位</th></tr></thead>
+    <tbody>
+      <tr><td><strong>芯片</strong></td><td colspan="2">
+        <strong>华为昇腾</strong>（国产核心） ·
+        <strong>寒武纪</strong>（推理主力，Q1首盈>10亿） ·
+        <strong>高通</strong> <span class="tag tag-hot">NEW</span>（数百万颗AI ASIC+联合制造，彭博5/26独家） ·
+        <strong>Intel/AMD</strong>（自研CPU合作方，早期）
+      </td></tr>
+      <tr><td><strong>代工</strong></td><td colspan="2">三星（6nm Ada） · 台积电/三星（CPU代工候选）</td></tr>
+      <tr><td><strong>AIDC</strong></td><td colspan="2">东阳光（算力租赁+液冷，190亿合同指向字节） · 润泽科技</td></tr>
+      <tr><td><strong>云端</strong></td><td colspan="2">自建为主，部分租用第三方IDC</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======== 三、核心业务流程 ======== -->
+<div class="section">
+  <h2><span class="num">三</span>核心业务流程</h2>
+
+  <h3>♻️ 字节的价值创造链路</h3>
+  <div class="flow-chart">
+用户内容消费（抖音/TikTok/头条）
+    ↓ 产生海量行为数据
+广告精准投放 + 电商转化（核心变现）
+    ↓ 产生现金流
+AI基础设施投入（算力+模型+芯片+CPU）
+    ↓ 提升AI能力
+更智能的推荐/搜索/内容生成/Agent
+    ↓ 进一步提升用户粘性和商业转化
+→ 闭环：数据 → AI → 体验 → 收入 → 更多AI投入
+  </div>
+
+  <h3>🔑 五大关键流程节点</h3>
+  <table>
+    <thead><tr><th style="width:30px">#</th><th>环节</th><th>核心内容</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>内容生产</strong></td><td>UGC + PGC + AIGC（Seedance/Seedream驱动AI短剧）；Q1 AI短剧12.2万部，占市场95%</td></tr>
+      <tr><td>2</td><td><strong>内容分发</strong></td><td>推荐算法核心壁垒，从DLRM→LLM级生成式推荐演进，四条主线：RankMixer→OneTrans→MixFormer→HyFormer</td></tr>
+      <tr><td>3</td><td><strong>商业变现</strong></td><td>信息流广告 + 直播电商 + 本地生活 + 红果电商 + MaaS API + Agent订阅</td></tr>
+      <tr><td>4</td><td><strong>AI赋能</strong></td><td>豆包大模型→C端应用（豆包App/Trae/即梦）+ B端输出（火山引擎MaaS/MLP/Agent全家桶/火山剧创）</td></tr>
+      <tr><td>5</td><td><strong>基础设施</strong></td><td>自研芯片（AI ASIC Ada + CPU双路线）+ 采购GPU/NPU/ASIC + 自建AIDC（国内外）+ 液冷>50%</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======== 四、组织架构与决策链 ======== -->
+<div class="section">
+  <h2><span class="num">四</span>组织架构与决策链</h2>
+
+  <h3>🏛️ 顶层架构</h3>
+  <div class="org-chart">
+CEO <strong>梁汝波</strong>
+├── 6大BU（直接汇报）
+│   ├── 抖音BU（张楠）— 国内内容+电商+本地生活
+│   ├── TikTok BU（周受资）— 全球化
+│   ├── 飞书BU（谢欣）— 企业协作
+│   ├── <strong>🔥 火山引擎BU（杨震原）— 云+AI基础设施</strong>
+│   ├── 朝夕光年BU（严授）— 游戏
+│   └── 大力教育BU（陈林）— 教育
+├── AI战略独立组织（CEO直管）
+│   ├── <strong>Seed（吴永辉）— AI技术底座+大模型研发</strong>
+│   └── Flow（朱文佳，向吴永辉汇报）— AI产品
+│       ├── 星绘→并入豆包，陆游统一管理
+│       └── 猫箱→换帅，西原接任
+└── 技术中台
+    ├── <strong>芯片团队（施云峰/余红斌→杨震原）</strong> — 千人规模
+    │   ├── AI芯片 Ada/SeedChip（三星6nm）
+    │   ├── 🆕 CPU项目（ARM+RISC-V双路线）
+    │   └── 高通ASIC联合设计+制造
+    └── Seed团队 — 基础模型、搜推广、多模态、训练框架
+  </div>
+
+  <h3>⭐ 关键决策角色</h3>
+  <table>
+    <thead><tr><th>角色</th><th>姓名</th><th>职责</th><th style="width:120px">AI Infra采购影响力</th></tr></thead>
+    <tbody>
+      <tr><td>CEO</td><td>梁汝波</td><td>最终决策</td><td><span class="stars">★★★★★</span></td></tr>
+      <tr style="background:#eff6ff;"><td><strong>火山引擎总裁 🔥</strong></td><td><strong>谭待</strong></td><td>云+AI基础设施、芯片采购</td><td><span class="stars">★★★★★</span></td></tr>
+      <tr><td>火山引擎BU负责人</td><td>杨震原</td><td>火山引擎整体战略</td><td><span class="stars">★★★★</span></td></tr>
+      <tr><td>Seed负责人</td><td>吴永辉</td><td>大模型技术方向</td><td><span class="stars">★★★★</span></td></tr>
+      <tr><td>Flow负责人</td><td>朱文佳</td><td>AI产品需求定义</td><td><span class="stars">★★★</span></td></tr>
+      <tr><td>芯片团队</td><td>施云峰/余红斌</td><td>芯片选型+自研（含CPU）</td><td><span class="stars">★★★★</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <p><strong>🔑 关键决策链特征：</strong></p>
+    <p>• AI战略由CEO直管 → <strong>AI是最高优先级</strong></p>
+    <p>• 芯片采购归属火山引擎 → <strong>谭待/杨震原是最直接决策者</strong></p>
+    <p>• Capex扩张速度惊人：1600亿→2000亿→上限$700亿（两周三度上调）</p>
+    <p>• 芯片策略六线并行：N卡(退场)+NPU+ASIC+自研AI+自研CPU+外部CPU</p>
+    <p>• 触达路径：<strong>火山引擎总裁团队 → Seed技术团队 → 芯片团队</strong></p>
+  </div>
+</div>
+
+<!-- ======== 五、业务痛点 ======== -->
+<div class="section">
+  <h2><span class="num">五</span>业务痛点</h2>
+  <table>
+    <thead><tr><th style="width:200px">痛点</th><th style="width:70px">程度</th><th style="width:130px">影响范围</th><th>当前应对</th><th>最新动态</th></tr></thead>
+    <tbody>
+      <tr style="background:#fef2f2;">
+        <td><strong>AI推理成本爆炸</strong></td><td><span class="sev-critical">🔴 极高</span></td><td>全公司</td><td>自研芯片、国产替代、高通ASIC</td><td>高通数百万颗ASIC，自研CPU从根上降本</td>
+      </tr>
+      <tr style="background:#fef2f2;">
+        <td><strong>英伟达芯片断供</strong></td><td><span class="sev-critical">🔴 极高</span></td><td>训练+推理</td><td>转华为昇腾+寒武纪+高通ASIC</td><td>英伟达份额降至~8%，实质性退场</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>AI商业化验证中</strong></td><td><span class="sev-high">🟡 高</span></td><td>豆包/Trae等C端</td><td>付费订阅实验、Agent Plan 40元起</td><td>豆包三档付费是C端AI里程碑</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>存储芯片涨价</strong></td><td><span class="sev-high">🟡 高</span></td><td>AIDC建设</td><td>追加Capex应对，国产替代评估</td><td>DRAM 250%+涨幅持续</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>净利润大幅下滑</strong></td><td><span class="sev-high">🟡 高</span></td><td>投资者信心</td><td>强调长期投资逻辑</td><td>彭博$700亿上限引发可持续性讨论</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>视频生成算力缺口</strong></td><td><span class="sev-high">🟡 高</span></td><td>Seedance 2.0</td><td>排队扩容</td><td>视频算力占市场80%+，需求远超供给</td>
+      </tr>
+      <tr style="background:#fffbeb;">
+        <td><strong>国产芯片产能瓶颈</strong></td><td><span class="sev-high">🟡 高</span></td><td>昇腾/寒武纪交付</td><td>多供应商+自研分散风险</td><td>华为产能预订满，寒武纪排至2027</td>
+      </tr>
+      <tr>
+        <td><strong>C端AI产品线收缩</strong></td><td><span class="sev-mid">🟢 中</span></td><td>猫箱等边缘产品</td><td>猫箱换帅+星绘并入豆包</td><td>"赛马扩张"→"聚焦主力"</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======== 六、AI高价值场景 ======== -->
+<div class="section">
+  <h2><span class="num">六</span>AI / 数智化高价值场景</h2>
+  <table>
+    <thead><tr><th>场景</th><th>业务价值</th><th style="width:70px">难度</th><th style="width:60px">优先级</th><th>最新动态</th></tr></thead>
+    <tbody>
+      <tr><td><strong>推荐/广告模型升级</strong></td><td>核心收入引擎，转化率+5%=百亿级收入</td><td>极高</td><td><span class="tag tag-p0">P0</span></td><td>四条主线→HyFormer，WWW 2026发表统一Transformer</td></tr>
+      <tr><td><strong>豆包大模型推理</strong></td><td>MAU 3.45亿，日均120万亿Token</td><td>高</td><td><span class="tag tag-p0">P0</span></td><td>三档付费、百万Token窗口、"买前问豆包"电商闭环</td></tr>
+      <tr><td><strong>Trae AI编程</strong></td><td>600万开发者，Token半年+700%</td><td>高</td><td><span class="tag tag-p0">P0</span></td><td>免费策略冲击Cursor/Claude Code</td></tr>
+      <tr><td><strong>Seedance视频生成</strong></td><td>Q1 AI短剧12.2万部占95%，算力占市场80%</td><td>极高</td><td><span class="tag tag-p1">P1</span></td><td>火山剧创1.0，15人14天<$50万，即梦按秒计费</td></tr>
+      <tr><td><strong>Agent生态</strong></td><td>7×24运行，新一代计算范式</td><td>高</td><td><span class="tag tag-p1">P1</span></td><td>ArkClaw独立定价，HiAgent 2.0降本63%，Agent安全IDC第一</td></tr>
+      <tr><td><strong>火山引擎MaaS</strong></td><td>49.5%调用量份额</td><td>中</td><td><span class="tag tag-p1">P1</span></td><td>Agent Plan将竞品模型纳入货架</td></tr>
+      <tr><td><strong>自研芯片(Ada+CPU)</strong> <span class="tag tag-new">NEW</span></td><td>中长期降本核心，CPU从ARM+RISC-V起步</td><td>极高</td><td><span class="tag tag-p1">P1</span></td><td>Ada 2026量产10-35万颗；CPU早期设计阶段</td></tr>
+      <tr><td><strong>汽车AI</strong></td><td>700万+搭载量，日均座舱交互3000万+次</td><td>中</td><td><span class="tag tag-p1">P1</span></td><td>50+品牌145款车型，全时免唤醒</td></tr>
+      <tr><td><strong>飞书AI办公</strong></td><td>Q1商业化超预期，赛力斯174个场景</td><td>中</td><td><span class="tag tag-p2">P2</span></td><td>AaaS向制造业扩散，CLI开源47天万星</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======== 七、算力需求映射 ======== -->
+<div class="section">
+  <h2><span class="num">七</span>算力需求映射</h2>
+
+  <h3>📊 业务→算力对照表</h3>
+  <table>
+    <thead><tr><th>业务场景</th><th>模型/工作负载</th><th>算力类型</th><th>当前规模</th><th style="width:80px">增长趋势</th></tr></thead>
+    <tbody>
+      <tr><td>豆包C端推理</td><td>Seed-2.0-pro (200B MoE) + lite全模态</td><td>推理</td><td>日均120万亿Token</td><td><span class="trend-up">↑↑↑ 16倍/年</span></td></tr>
+      <tr><td>推荐/广告训练</td><td>RankMixer/OneTrans LLM级</td><td>训练+推理</td><td>~900亿预算(2025)</td><td><span class="trend-up">↑↑ LLM级演进</span></td></tr>
+      <tr><td>Trae AI编程</td><td>doubao-1.5-pro / DeepSeek-R1等</td><td>推理</td><td>Token半年+700%</td><td><span class="trend-up">↑↑↑ 高速增长</span></td></tr>
+      <tr><td>Seedance视频</td><td>双分支扩散Transformer</td><td>推理+训练</td><td>占市场80%算力，排队拥堵</td><td><span class="trend-up">↑↑↑ 远超供给</span></td></tr>
+      <tr><td>MaaS客户</td><td>多模型混部</td><td>推理</td><td>1944万亿Token(2025全行业)</td><td><span class="trend-up">↑↑ 20倍预测</span></td></tr>
+      <tr><td>Agent生态</td><td>ArkClaw/Coze 7×24常驻</td><td>推理</td><td>新赛道，单次→持续请求</td><td><span class="trend-up">↑↑ 结构性质变</span></td></tr>
+      <tr><td>自研芯片</td><td>Ada推理 + CPU设计验证</td><td>仿真+适配</td><td>2026量产10-35万颗</td><td><span class="trend-up">↑ 从0到1</span></td></tr>
+      <tr><td>飞书+汽车AI</td><td>aily/对话推理引擎</td><td>推理</td><td>日均3000万+次座舱交互</td><td><span class="trend-up">↑ 稳定增长</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>🔌 芯片供需全景（六线并行）</h3>
+  <table>
+    <thead><tr><th>类型</th><th>主要来源</th><th>2026规模</th><th>缺口判断</th><th>最新动态</th></tr></thead>
+    <tbody>
+      <tr><td><strong>训练GPU</strong></td><td>英伟达(存量递减)+昇腾910C(~7万颗)</td><td>华为~7万颗</td><td>供应受限</td><td>英伟达份额降至~8%</td></tr>
+      <tr><td><strong>推理NPU</strong></td><td>昇腾950PR + 寒武纪思元590</td><td>华为25-35万 + 寒武纪30万颗</td><td>产能瓶颈</td><td>寒武纪Q1首盈>10亿，商业化拐点</td></tr>
+      <tr style="background:#faf5ff;"><td><strong>定制ASIC</strong> <span class="tag tag-hot">NEW</span></td><td>高通数百万颗AI ASIC</td><td>数百万颗</td><td>填补推理缺口</td><td>🔴 本周最大变量：高通入局+联合制造</td></tr>
+      <tr><td><strong>自研AI芯片</strong></td><td>Ada/SeedChip（三星6nm）</td><td>10-35万颗</td><td>起步阶段</td><td>千人团队多项目并行</td></tr>
+      <tr style="background:#faf5ff;"><td><strong>自研CPU</strong> <span class="tag tag-new">🆕</span></td><td>ARM + RISC-V双路线</td><td>早期设计</td><td>2027-2028量产</td><td>路透5/28曝光，为Agent业务准备</td></tr>
+      <tr><td><strong>存储/HBM</strong></td><td>海外供应商为主</td><td>需求巨大</td><td>DRAM 250%+涨价</td><td>国产替代评估中</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ======== 八、洞察摘要 ======== -->
+<div class="section">
+  <h2><span class="num">八</span>洞察摘要</h2>
+
+  <div class="callout callout-insight">
+    <p><strong>① 字节是中国AI算力消耗的绝对中心，且投入没有天花板。</strong></p>
+    <p>从5/9南华早报2000亿→5/27彭博内部上限$700亿（~4777亿），两周Capex三度上修。豆包MAU 3.45亿+日均120万亿Token、推荐LLM化、AI编程爆发、视频生成兴起、Agent生态质变——五股力量叠加驱动指数级增长。字节正在押注AI自我造血之前最大规模的基础设施建设。</p>
+  </div>
+
+  <div class="callout callout-insight">
+    <p><strong>② 芯片战略进入"六线并行"超级复杂阶段。</strong></p>
+    <p>英伟达退场→华为昇腾+寒武纪→高通ASIC(数百万颗)→自研Ada(6nm)→自研CPU(ARM+RISC-V)→外部CPU采购。不是简单"国产替代"，而是全栈自主可控。外部供应商机会从"卖芯片"变成"助力造芯片"。</p>
+  </div>
+
+  <div class="callout callout-insight">
+    <p><strong>③ 火山引擎商业模式质变：从"卖Token"到"卖Agent能力平台"。</strong></p>
+    <p>Agent Plan以40元/月将竞品模型纳入货架，不再追求单一模型领先，而是"最大调用量验证的稳定性+多模型货架+Agent全家桶"组合优势。AI Infra切入点应从"帮字节训推降本"扩展到"帮Agent平台客户训推降本"。</p>
+  </div>
+
+  <div class="callout callout-insight">
+    <p><strong>④ 最大痛点=最大机会：AI推理成本。</strong></p>
+    <p>日均120万亿Token推理成本驱动字节在降本上极度激进——自研芯片、国产替代、高通ASIC、推理优化框架、自研CPU——供应链重构期的每一个缺口都是销售机会窗口。</p>
+  </div>
+
+  <div class="callout callout-insight">
+    <p><strong>⑤ 决策链清晰，触达路径明确。</strong></p>
+    <p>火山引擎谭待/杨震原（AI Infra采购决策）→ 芯片团队施云峰/余红斌（自研选型）→ Seed吴永辉（技术方向）→ CEO梁汝波（终批）。<strong>2026年850亿-4777亿AI芯片采购预算是中国最大的单客户AI芯片销售机会。</strong></p>
+  </div>
+</div>
+
+<!-- ======== FOOTER ======== -->
+<div class="report-footer">
+  <p>本报告基于华为"看BA讲TA"方法论·察阶段 | 数据截止 2026-06-01 | 公开信息整理，部分数据为媒体报道或行业分析，不代表字节跳动官方立场</p>
+  <p style="margin-top:4px;">信息来源：Bloomberg · Reuters · 财联社 · 南华早报 · 火山引擎官方 · IDC · QuestMobile · SuperCLUE · 寒武纪财报 · 华泰证券 · 证券时报 · CVPR 2026 · WWW 2026</p>
+</div>
+
+</div>
+</body>
+</html>
