@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中国电信 BA 业务架构画像</title>
+
+<style>
+body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; max-width: 960px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
+h1 { font-size: 28px; border-bottom: 3px solid #0d47a1; padding-bottom: 12px; margin-top: 0; color: #0d47a1; }
+h2 { font-size: 22px; margin-top: 36px; color: #1565c0; border-bottom: 1px solid #e0e0e0; padding-bottom: 6px; }
+h3 { font-size: 18px; margin-top: 24px; color: #1976d2; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+th { background: #0d47a1; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+td { padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
+tr:nth-child(even) td { background: #f5f8ff; }
+blockquote { border-left: 4px solid #0d47a1; padding: 12px 20px; margin: 16px 0; background: #f5f8ff; color: #37474f; }
+code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+pre { background: #263238; color: #aed581; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+pre code { background: none; padding: 0; color: inherit; }
+strong { color: #0d47a1; }
+hr { border: none; border-top: 1px solid #e0e0e0; margin: 32px 0; }
+.meta { color: #999; font-size: 13px; }
+img { max-width: 100%; }
+</style>
+
+</head>
+<body>
+<h1>中国电信 BA 业务架构画像</h1>
+<blockquote>
+<p>生成时间：2026-06-02 ｜ 基于华为"看BA讲TA"方法论·察阶段
+数据来源：中国电信2025年报、公开财报、行业研究报告、官方新闻</p>
+</blockquote>
+<hr />
+<h2>一、客户基本画像</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>客户名称</td>
+<td>中国电信集团有限公司（China Telecom）</td>
+</tr>
+<tr>
+<td>所属行业</td>
+<td>电信运营商 / 云服务 / AI基础设施</td>
+</tr>
+<tr>
+<td>业务规模</td>
+<td>2025年营收5296亿元，净利润332亿元；移动用户4.2亿+，宽带用户2亿+</td>
+</tr>
+<tr>
+<td>核心业务</td>
+<td>移动通信、固网宽带、天翼云（1207亿元）、AIDC（345亿元）、AI/智能服务（123亿元）</td>
+</tr>
+<tr>
+<td>发展阶段</td>
+<td>成熟运营商→"云改数转智惠"战略转型期，从通信管道商向AI服务商跃迁</td>
+</tr>
+</tbody>
+</table>
+<h2>二、商业模式</h2>
+<ul>
+<li><strong>收入来源</strong>：移动/宽带通信服务费（基础盘）、天翼云（IaaS/PaaS/SaaS，公有云IaaS国内第二）、AIDC智算中心服务、政企数字化解决方案、Token经营（AI模型推理服务）、安全/量子/卫星等战新业务</li>
+<li><strong>核心价值主张</strong>："国云+国芯+国模"全链自主可控，以Token经营模式让AI像水电一样触达千行百业；从"卖流量"到"卖Token"的商业模式重构</li>
+<li><strong>关键资源和合作伙伴</strong>：全国31省光纤网络覆盖、4+4+31+X智算布局、91 EFLOPS可调度算力、央企身份带来的政务/国企市场准入优势；华为昇腾芯片深度合作、赛力斯/青海/山西等战略签约</li>
+<li><strong>成本结构</strong>：网络运维（最大头）、算力基础设施投资（AIDC建设、GPU/NPU采购）、芯片采购（国产昇腾为主）、研发投入（TeleAI研究院、星辰大模型）、营销和渠道</li>
+</ul>
+<h2>三、核心业务流程</h2>
+<div class="codehilite"><pre><span></span><code>网络基础设施 → 云底座(天翼云) → 算力调度(息壤) → AI平台(星辰大模型) → 行业应用
+     ↓              ↓                ↓                ↓                ↓
+  光纤/5G/卫星   一云多芯       跨地域/跨芯片     全模态/全尺寸      政务/金融/工业
+                一云多态        异构算力统一      语义/语音/视觉     /医疗/教育/汽车
+                一云多算        调度+Token化       /多模态           端-边-云协同
+</code></pre></div>
+
+<p><strong>关键流程节点：</strong></p>
+<ol>
+<li><strong>算力基础设施建设</strong>：4+4+31+X智算布局，上海/北京两大万卡集群，全国产芯片（昇腾）适配</li>
+<li><strong>息壤平台调度</strong>：跨地域、跨芯片类型的算力统一纳管与调度，Token化服务输出</li>
+<li><strong>星辰大模型服务</strong>：全模态AI能力（语义/语音/视觉/视频）通过天翼AI开放平台对外提供</li>
+<li><strong>行业解决方案交付</strong>：覆盖20+行业，300+行业智能体，央企AI渗透率85%</li>
+<li><strong>Token经营变现</strong>：按需调用、按量计费，AI能力像水电一样标准化销售</li>
+</ol>
+<h2>四、组织架构与决策链</h2>
+<ul>
+<li><strong>关键部门/角色</strong>：</li>
+<li>董事长 柯瑞文：战略定调，争取制度环境，两会提案推动AI考核机制改革</li>
+<li>总经理 刘桂清：产业落地执行，签约合作，AI场景拓展</li>
+<li>副总经理 唐珂（2026年1月升任党组副书记）：主导AI+终端渠道生态，建成两大万卡集群</li>
+<li>中电信人工智能科技公司（2023年成立）：星辰大模型研发运营主体</li>
+<li>中国电信人工智能研究院（TeleAI，2024年揭牌）：前沿AI研究</li>
+<li>天翼云公司：云和智算业务运营主体</li>
+<li><strong>决策流程</strong>：集团党组会战略决策 → 分管副总业务决策 → 专业公司/省公司执行落地</li>
+<li><strong>预算归属</strong>：AI/云相关预算归属天翼云+AI公司+各省公司政企线；2025年AIDC资本开支数百亿级别</li>
+<li><strong>技术决策影响者</strong>：TeleAI研究院（模型路线）、天翼云（基础设施路线）、集团科创部（信创合规）</li>
+</ul>
+<h2>五、业务痛点</h2>
+<table>
+<thead>
+<tr>
+<th>痛点</th>
+<th>严重程度</th>
+<th>影响范围</th>
+<th>当前应对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>天翼云增速放缓（同比仅6%）</td>
+<td>高</td>
+<td>第二增长曲线承压</td>
+<td>加速Token经营转型，推息壤智算一体机</td>
+</tr>
+<tr>
+<td>大模型能力与互联网大厂有差距</td>
+<td>高</td>
+<td>AI竞争力核心</td>
+<td>星辰大模型全国产化+开源策略，构建国云差异化</td>
+</tr>
+<tr>
+<td>传统考核机制不适应AI长周期投入</td>
+<td>中</td>
+<td>组织活力</td>
+<td>董事长两会呼吁改革，推动长期价值导向</td>
+</tr>
+<tr>
+<td>国产芯片生态不够丰富</td>
+<td>中</td>
+<td>算力供给多样性</td>
+<td>息壤平台实现跨芯片调度，一云多芯策略</td>
+</tr>
+<tr>
+<td>政企市场依赖度过高</td>
+<td>中</td>
+<td>收入结构风险</td>
+<td>向Token经营、中小企业AI普惠拓展</td>
+</tr>
+<tr>
+<td>AI人才竞争激烈</td>
+<td>高</td>
+<td>研发和交付</td>
+<td>青干班培养+业界引进，TeleAI建研究院</td>
+</tr>
+</tbody>
+</table>
+<h2>六、AI/数智化高价值场景</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>业务价值</th>
+<th>技术难度</th>
+<th>优先级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>息壤Token服务平台（AI能力标准化输出）</td>
+<td>★★★★★ 核心商业模式</td>
+<td>高</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>政务AI（智能问政/公文处理/工单自动化）</td>
+<td>★★★★★ 央企护城河</td>
+<td>中</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>工业大模型（中国中车"研轮"等）</td>
+<td>★★★★ 高端制造</td>
+<td>高</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>金融AI（风控/投研/合规）</td>
+<td>★★★★ 高客单价</td>
+<td>高</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>医疗AI（辅助诊断/病例分析）</td>
+<td>★★★ 民生刚需</td>
+<td>高</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>汽车AI（赛力斯合作/智能座舱）</td>
+<td>★★★ 新增长极</td>
+<td>高</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>AI终端（AI手机/智能眼镜/家庭机器人）</td>
+<td>★★★ 消费者触达</td>
+<td>中</td>
+<td>P2</td>
+</tr>
+<tr>
+<td>反诈外呼（贵州案例）</td>
+<td>★★★ 社会效益</td>
+<td>中</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<h2>七、算力需求映射</h2>
+<table>
+<thead>
+<tr>
+<th>业务场景</th>
+<th>模型/工作负载</th>
+<th>算力类型</th>
+<th>预估规模</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>星辰大模型训练</td>
+<td>千亿参数MoE稠密模型，全模态</td>
+<td>训练（昇腾集群）</td>
+<td>万卡级，持续扩容</td>
+</tr>
+<tr>
+<td>息壤Token推理服务</td>
+<td>50+大模型聚合推理</td>
+<td>推理（混合芯片）</td>
+<td>日均百亿级Token</td>
+</tr>
+<tr>
+<td>政务/行业智能体</td>
+<td>300+行业智能体推理</td>
+<td>推理</td>
+<td>持续增长</td>
+</tr>
+<tr>
+<td>视觉大模型</td>
+<td>万级视觉算法仓，日均20亿次调用</td>
+<td>推理</td>
+<td>大规模持续</td>
+</tr>
+<tr>
+<td>语音大模型</td>
+<td>60种方言语音识别</td>
+<td>训练+推理</td>
+<td>中大规模</td>
+</tr>
+<tr>
+<td>视频生成（TeleStudio）</td>
+<td>多模态视频生成</td>
+<td>训练+推理</td>
+<td>快速增长</td>
+</tr>
+</tbody>
+</table>
+<h2>八、洞察摘要</h2>
+<blockquote>
+<p>中国电信正处于从通信运营商向AI服务商的关键转型期。"云改数转智惠"战略升级标志着AI从辅助业务上升为核心增长引擎——天翼云1207亿和智能收入123亿（同比+39.4%）构成第二曲线。其核心竞争力不是单一模型能力，而是"国云+国芯+国模"的全栈自主可控体系：以息壤平台实现跨地域跨芯片算力调度，以星辰大模型提供全模态AI能力，以Token经营模式降低AI使用门槛。最大战略机遇在于央企身份带来的政务/国企市场独占性优势（央企AI渗透率85%），最大挑战在于天翼云增速放缓（6%）和与互联网大厂在模型核心能力上的差距。对AI Infra供应商而言，切入点是：①国产芯片（昇腾）大规模集群化部署和调优 ②混合算力（多芯片类型）统一调度平台 ③行业大模型训练/推理基础设施。</p>
+</blockquote>
+<hr />
+<p><em>本文件基于华为"看BA讲TA"方法论·察阶段产出</em>
+<em>数据截止：2026年6月</em></p>
+</body>
+</html>
